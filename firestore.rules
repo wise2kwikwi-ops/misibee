@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "wise2moon@gmail.com" || 
+        request.auth.token.email == "wise2kwikwi@gmail.com"
+      );
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Target Companies: Admin only
+    match /targetCompanies/{companyId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Outreach Templates: Admin only
+    match /outreachTemplates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Contract Templates: Admin only
+    match /contractTemplates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Inquiries: Public create, Admin read/delete
+    match /inquiries/{inquiryId} {
+      allow create: if true; // Public can submit inquiries
+      allow read, delete: if isAdmin();
+      allow update: if false; // Inquiries should not be updated
+    }
+  }
+}

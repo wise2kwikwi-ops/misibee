@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "TargetCompany": {
+      "title": "Target Company",
+      "description": "A company targeted for B2B outreach.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Company name" },
+        "industry": { "type": "string", "description": "Industry sector" },
+        "reason": { "type": "string", "description": "Strategic reason for targeting" },
+        "status": { "type": "string", "enum": ["New", "Contacted", "Meeting", "Contracted"], "description": "Outreach status" },
+        "hrEmail": { "type": "string", "format": "email", "description": "HR representative email" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["name", "industry", "status", "hrEmail"]
+    },
+    "OutreachTemplate": {
+      "title": "Outreach Template",
+      "description": "A template for cold emails or calls.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Template title" },
+        "type": { "type": "string", "enum": ["Email", "Call"], "description": "Template type" },
+        "subject": { "type": "string", "description": "Email subject" },
+        "content": { "type": "string", "description": "Template content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["title", "type", "content"]
+    },
+    "ContractTemplate": {
+      "title": "Contract Template",
+      "description": "A template for recruitment agreements.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Template title" },
+        "content": { "type": "string", "description": "Contract content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["title", "content"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "A contact inquiry from a client or job seeker.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Inquirer name" },
+        "email": { "type": "string", "format": "email", "description": "Inquirer email" },
+        "phone": { "type": "string", "description": "Inquirer phone number" },
+        "type": { "type": "string", "enum": ["Client", "Job Seeker", "Other"], "description": "Inquiry type" },
+        "message": { "type": "string", "description": "Inquiry message" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission timestamp" }
+      },
+      "required": ["name", "email", "message", "type"]
+    }
+  },
+  "firestore": {
+    "/targetCompanies/{companyId}": {
+      "schema": "TargetCompany",
+      "description": "Target companies collection"
+    },
+    "/outreachTemplates/{templateId}": {
+      "schema": "OutreachTemplate",
+      "description": "Outreach templates collection"
+    },
+    "/contractTemplates/{templateId}": {
+      "schema": "ContractTemplate",
+      "description": "Contract templates collection"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Contact inquiries collection"
+    }
+  }
+}
