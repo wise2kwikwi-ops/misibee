@@ -282,7 +282,7 @@ export default function App() {
           className="flex items-center gap-2"
         >
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-            <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+            <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
           </div>
           <span className="font-bold tracking-tight">TRUSTON</span>
         </button>
@@ -327,7 +327,7 @@ export default function App() {
                   className="flex items-center gap-2"
                 >
                   <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-                    <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                   </div>
                   <h1 className="text-xl font-bold tracking-tight">TRUSTON</h1>
                 </button>
@@ -412,7 +412,7 @@ export default function App() {
               className="flex items-center gap-2 group"
             >
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden border border-gray-100 relative">
-                <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
               </div>
               <h1 className="text-xl font-bold tracking-tight">TRUSTON</h1>
             </button>
@@ -974,7 +974,7 @@ function ContractView({ contracts }: { contracts: any[] }) {
           <body>
             <div class="header">
               <div style="width: 100px; height: 100px; margin: 0 auto 20px; overflow: hidden; border-radius: 20px; border: 1px solid #eee; position: relative; display: flex; align-items: center; justify-content: center; background: white;">
-                <img src="/logo_main-1.png" style="width: 90%; height: 90%; object-fit: contain;" />
+                <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo_main.jpg" style="width: 90%; height: 90%; object-fit: contain;" />
               </div>
               <h1>Truston Recruitment Agreement</h1>
             </div>
@@ -1065,7 +1065,7 @@ function AboutView({ t }: { t: any }) {
     <div className="max-w-5xl mx-auto space-y-16 py-8">
       <section className="text-center space-y-6">
         <div className="inline-block bg-white rounded-3xl shadow-xl mb-4 overflow-hidden w-40 h-40 relative">
-          <img src="/logo_main.jpg" alt="Truston Emblem" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo_main.jpg" alt="Truston Emblem" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         </div>
         <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
           {t.about_title}<br />
@@ -1393,7 +1393,7 @@ function Footer({ t }: { t: any }) {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-              <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+              <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
             <span className="font-bold tracking-tight">TRUSTON</span>
           </div>
