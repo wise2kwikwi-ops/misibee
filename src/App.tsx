@@ -282,7 +282,7 @@ export default function App() {
           className="flex items-center gap-2"
         >
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-            <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+            <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
           </div>
           <span className="font-bold tracking-tight">TRUSTON</span>
         </button>
@@ -327,7 +327,7 @@ export default function App() {
                   className="flex items-center gap-2"
                 >
                   <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-                    <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                   </div>
                   <h1 className="text-xl font-bold tracking-tight">TRUSTON</h1>
                 </button>
@@ -412,7 +412,7 @@ export default function App() {
               className="flex items-center gap-2 group"
             >
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden border border-gray-100 relative">
-                <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
               </div>
               <h1 className="text-xl font-bold tracking-tight">TRUSTON</h1>
             </button>
@@ -1393,7 +1393,7 @@ function Footer({ t }: { t: any }) {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative">
-              <img src="https://ais-dev-rra6jidrntm5d6xnbtohn3-607862644369.asia-east1.run.app/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+              <img src="/logo.jpg" alt="Truston Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
             <span className="font-bold tracking-tight">TRUSTON</span>
           </div>
