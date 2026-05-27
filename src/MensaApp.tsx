@@ -45,13 +45,14 @@ function shuffle<T>(arr: T[], seed = Math.random()): T[] {
 
 function estimateIQ(score: number, total: number) {
   const p = score / total;
-  if (p >= 0.95) return { iq: 145, label: '최상위 0.1%', color: 'text-purple-400' };
-  if (p >= 0.90) return { iq: 135, label: '멘사 수준 (상위 2%)', color: 'text-indigo-400' };
-  if (p >= 0.82) return { iq: 130, label: '우수 (상위 5%)', color: 'text-blue-400' };
-  if (p >= 0.75) return { iq: 125, label: '높음 (상위 10%)', color: 'text-sky-400' };
-  if (p >= 0.65) return { iq: 120, label: '평균 이상', color: 'text-teal-400' };
-  if (p >= 0.50) return { iq: 110, label: '보통', color: 'text-emerald-400' };
-  return { iq: 100, label: '연습 필요', color: 'text-amber-400' };
+  // Calibrated for the harder 25-question Mensa-level test
+  if (p >= 0.96) return { iq: 148, label: '최상위 0.1% (천재 수준)', color: 'text-purple-400' };
+  if (p >= 0.88) return { iq: 132, label: '멘사 합격권 (상위 2%)', color: 'text-indigo-400' };
+  if (p >= 0.80) return { iq: 127, label: '상위 5% — 멘사 근접', color: 'text-blue-400' };
+  if (p >= 0.72) return { iq: 122, label: '상위 10% — 우수', color: 'text-sky-400' };
+  if (p >= 0.60) return { iq: 115, label: '평균 이상', color: 'text-teal-400' };
+  if (p >= 0.48) return { iq: 107, label: '보통 수준', color: 'text-emerald-400' };
+  return { iq: 98, label: '추가 연습 필요', color: 'text-amber-400' };
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -88,14 +89,21 @@ export default function MensaApp() {
   }
 
   function startExam() {
-    // 40 questions: 20 matrix, 10 series, 10 oddOneOut
-    const mat = shuffle(ALL_FRT_QUESTIONS.filter(q => q.type === 'matrix3x3')).slice(0, 20);
-    const ser = shuffle(ALL_FRT_QUESTIONS.filter(q => q.type === 'series')).slice(0, 10);
-    const odd = shuffle(ALL_FRT_QUESTIONS.filter(q => q.type === 'oddOneOut')).slice(0, 10);
+    // 25 questions (30 min): difficulty-stratified like real Mensa Korea
+    const byDiff = (d: number) => ALL_FRT_QUESTIONS.filter(q => q.difficulty === d);
+    const mat = [
+      ...shuffle(byDiff(1).filter(q=>q.type==='matrix3x3')).slice(0,3),
+      ...shuffle(byDiff(2).filter(q=>q.type==='matrix3x3')).slice(0,4),
+      ...shuffle(byDiff(3).filter(q=>q.type==='matrix3x3')).slice(0,3),
+      ...shuffle(byDiff(4).filter(q=>q.type==='matrix3x3')).slice(0,2),
+      ...shuffle(byDiff(5).filter(q=>q.type==='matrix3x3')).slice(0,1),
+    ];
+    const ser = shuffle(ALL_FRT_QUESTIONS.filter(q=>q.type==='series')).slice(0,6);
+    const odd = shuffle(ALL_FRT_QUESTIONS.filter(q=>q.type==='oddOneOut')).slice(0,6);
     const qs = shuffle([...mat, ...ser, ...odd]);
     setQuestions(qs); setIdx(0); setAnswers(new Array(qs.length).fill(null));
     setSelected(null); setShowExp(false); setIsExam(true);
-    setTimeLeft(40 * 60); startRef.current = Date.now(); setView('exam');
+    setTimeLeft(30 * 60); startRef.current = Date.now(); setView('exam');
     timerRef.current = setInterval(() => {
       setTimeLeft(t => { if (t <= 1) { stopTimer(); return 0; } return t - 1; });
     }, 1000);
@@ -232,7 +240,7 @@ function HomeView({ stats, onPractice, onExam, onStats }: {
               <div>
                 <div className="flex items-center gap-2 mb-1"><Clock size={18} className="text-blue-200" /><span className="text-blue-200 text-sm font-medium">실전 모의고사</span></div>
                 <h3 className="text-xl font-bold">FRT 모의시험 시작</h3>
-                <p className="text-blue-200 text-sm mt-1">40문제 · 40분 · 도형 추리 전 유형</p>
+                <p className="text-blue-200 text-sm mt-1">25문제 · 30분 · 난이도 1~5단계 혼합</p>
               </div>
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Play size={22} className="text-white ml-0.5" />
@@ -346,7 +354,7 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
           <p className="text-white/70 text-sm mb-4">
             {q.type === 'matrix3x3' && '다음 3×3 도형 행렬에서 물음표(?) 자리에 들어갈 알맞은 도형을 고르시오.'}
             {q.type === 'series' && '다음 도형 수열에서 물음표(?) 자리에 들어갈 알맞은 도형을 고르시오.'}
-            {q.type === 'oddOneOut' && '다음 4개의 도형 중 나머지와 패턴이 다른 하나를 고르시오.'}
+            {q.type === 'oddOneOut' && '다음 5개의 도형 중 나머지와 패턴이 다른 하나를 고르시오.'}
           </p>
 
           {/* Figure Grid */}
@@ -358,11 +366,11 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
             </motion.div>
           </AnimatePresence>
 
-          {/* Options (for matrix and series) */}
+          {/* Options (for matrix and series) — 5지선다 */}
           {(q.type === 'matrix3x3' || q.type === 'series') && (
             <div className="mt-6">
-              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지</p>
-              <div className="grid grid-cols-4 gap-3">
+              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (5지선다)</p>
+              <div className="flex flex-wrap justify-center gap-2">
                 {q.options.map((opt, i) => {
                   let ring = 'ring-transparent';
                   let bg = 'bg-white/10 hover:bg-white/20';
@@ -376,12 +384,12 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
                   return (
                     <button key={i} onClick={() => onSelect(i)}
                       disabled={!isExam && selected !== null}
-                      className={cn('rounded-2xl p-3 flex flex-col items-center gap-2 transition-all border border-white/10 ring-2', bg, ring,
+                      className={cn('rounded-2xl p-3 flex flex-col items-center gap-2 transition-all border border-white/10 ring-2 w-[18%] min-w-[64px]', bg, ring,
                         !(!isExam && selected !== null) && 'hover:-translate-y-0.5 cursor-pointer')}>
                       <div className="bg-white rounded-xl p-1.5">
-                        <FigureCell fig={opt} size={52}/>
+                        <FigureCell fig={opt} size={48}/>
                       </div>
-                      <span className="text-xs font-bold text-white/70">{['①','②','③','④'][i]}</span>
+                      <span className="text-xs font-bold text-white/70">{['①','②','③','④','⑤'][i]}</span>
                       {!isExam && showExp && (
                         i === q.answer ? <CheckCircle size={14} className="text-emerald-400"/> :
                         i === selected ? <XCircle size={14} className="text-rose-400"/> : null
@@ -494,7 +502,7 @@ function OddOneOutDisplay({ cells, selected, isExam, onSelect, answer, showAnswe
               'hover:-translate-y-0.5 cursor-pointer')}>
             <div className="flex flex-col items-center gap-2">
               <FigureCell fig={fig} size={70} />
-              <span className="text-xs font-bold text-slate-500">{['①','②','③','④'][i]}</span>
+              <span className="text-xs font-bold text-slate-500">{['①','②','③','④','⑤'][i]}</span>
               {!isExam && showAnswer && (
                 i === answer ? <CheckCircle size={14} className="text-emerald-500"/> :
                 i === selected ? <XCircle size={14} className="text-rose-500"/> : null
@@ -612,16 +620,16 @@ function ReviewView({ questions, answers, idx, onNext, onPrev, onBack, onHome }:
 
           {(q.type === 'matrix3x3' || q.type === 'series') && (
             <div className="mt-4">
-              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지</p>
-              <div className="grid grid-cols-4 gap-3">
+              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (5지선다)</p>
+              <div className="flex flex-wrap justify-center gap-2">
                 {q.options.map((opt, i) => {
                   let ring = 'ring-transparent', bg = 'bg-white';
                   if (i === q.answer) { ring = 'ring-emerald-400'; bg = 'bg-emerald-50'; }
                   else if (i === userAns) { ring = 'ring-rose-400'; bg = 'bg-rose-50'; }
                   return (
-                    <div key={i} className={cn('rounded-2xl p-2 border-2 ring-2 flex flex-col items-center gap-1.5', bg, ring)}>
-                      <FigureCell fig={opt} size={52}/>
-                      <span className="text-xs font-bold text-slate-400">{['①','②','③','④'][i]}</span>
+                    <div key={i} className={cn('rounded-2xl p-2 border-2 ring-2 flex flex-col items-center gap-1.5 w-[18%] min-w-[56px]', bg, ring)}>
+                      <FigureCell fig={opt} size={48}/>
+                      <span className="text-xs font-bold text-slate-400">{['①','②','③','④','⑤'][i]}</span>
                       {i === q.answer && <CheckCircle size={12} className="text-emerald-500"/>}
                       {i === userAns && i !== q.answer && <XCircle size={12} className="text-rose-500"/>}
                     </div>
