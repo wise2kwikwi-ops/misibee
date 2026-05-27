@@ -483,22 +483,17 @@ let qid = 1;
     const oddFill: Fill = FILLS[(FILLS.indexOf(fill) + 1) % FILLS.length];
     const oddPos = local % 4; // which of the 5 items is odd
 
-    // Build 5 items: 4 same + 1 odd at position oddPos
+    // Build 4 items: 3 same + 1 odd at position oddPos
     const items: Fig[] = [f(s0,fill,sz), f(s1,fill,sz), f(s2,fill,sz), f(s3,fill,sz)];
-    items.splice(oddPos, 0, f(SHAPES[(si+4)%SHAPES.length], oddFill, sz));
-    // cells = 5 items (stored in cells[0..4])
-    // In the UI: show 5 items, pick which is different
-    // We encode: cells = 5 items; options = [item0, item1, item2, item3] where one is the odd
-    // answer = oddPos (0-3) — but oddPos might be 4, so mod 4 for answer placement
-    const answerPos = oddPos % 4;
+    items[oddPos] = f(SHAPES[(si+4)%SHAPES.length], oddFill, sz);
     QUESTIONS.push({
       id: qid++,
       type: 'oddOneOut',
       cells: items,
-      options: [items[0], items[1], items[2], items[3]] as [Fig,Fig,Fig,Fig],
-      answer: answerPos,
-      explanation: `나머지 4개는 ${FILL_KO[fill]} 채우기이지만, ` +
-        `${answerPos+1}번 도형은 ${FILL_KO[oddFill]} 채우기로 다릅니다.`,
+      options: items as [Fig,Fig,Fig,Fig],
+      answer: oddPos,
+      explanation: `나머지 3개는 ${FILL_KO[fill]} 채우기이지만, ` +
+        `${oddPos+1}번 도형은 ${FILL_KO[oddFill]} 채우기로 다릅니다.`,
     });
     local++;
   }
