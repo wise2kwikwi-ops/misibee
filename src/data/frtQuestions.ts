@@ -6,22 +6,20 @@ function f(shape: Shape, fill: Fill = 'solid', size: Size = 2, rotation = 0, cou
   return { shape, fill, size, rotation, count };
 }
 
-function d5sz(sz: Size): Size { return (sz % 3 + 1) as Size; }
-
-function makeQ6(
+function makeQ5(
   id: number,
   cells: Fig[],
   correct: Fig,
-  d1: Fig, d2: Fig, d3: Fig, d4: Fig, d5: Fig,
+  d1: Fig, d2: Fig, d3: Fig, d4: Fig,
   explanation: string,
   type: FRTQuestion['type'] = 'matrix3x3',
   difficulty: FRTQuestion['difficulty'] = 1,
 ): FRTQuestion {
-  const pos = id % 6;
-  const pool = [d1, d2, d3, d4, d5];
-  const opts: [Fig, Fig, Fig, Fig, Fig, Fig] = [d1, d2, d3, d4, d5, d1];
+  const pos = id % 5;
+  const pool = [d1, d2, d3, d4];
+  const opts: [Fig, Fig, Fig, Fig, Fig] = [d1, d2, d3, d4, d1];
   let pi = 0;
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 5; i++) {
     if (i === pos) opts[i] = correct;
     else opts[i] = pool[pi++];
   }
@@ -128,8 +126,7 @@ let qid = 1;
         const d2 = f(s2, f1, s); // right shape, wrong fill col1
         const d3 = f(s0, f2, s); // wrong shape row0, right fill
         const d4 = f(s1, f2, s); // wrong shape row1, right fill
-        const d5 = f(s2, f2, d5sz(s)); // correct shape+fill, wrong size
-        QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+        QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
           `행 규칙: ${SHAPE_KO[s2]} / 열 규칙: ${FILL_KO[f2]}`,
           'matrix3x3', 1));
         n++;
@@ -163,8 +160,7 @@ let qid = 1;
       const d2 = f(s2, f2, sz); // wrong shape: s2 already in row2 col0
       const d3 = f(s1, f0, sz); // right shape, wrong fill (f0=row0)
       const d4 = f(s1, f1, sz); // right shape, wrong fill (f1=row1)
-      const d5 = f(s1, f2, d5sz(sz)); // correct shape+fill, wrong size
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `형태 라틴 방진: 각 행·열에 ${SHAPE_KO[s0]}·${SHAPE_KO[s1]}·${SHAPE_KO[s2]} 1번씩. 행 채우기=${FILL_KO[f2]}`,
         'matrix3x3', 2));
       n++;
@@ -197,8 +193,7 @@ let qid = 1;
       const d2 = f(s2, f2, sz); // wrong fill: f2 already in row2 col0
       const d3 = f(s0, f1, sz); // wrong shape (row0), right fill
       const d4 = f(s1, f1, sz); // wrong shape (row1), right fill
-      const d5 = f(s2, f1, d5sz(sz)); // correct shape+fill, wrong size
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `채우기 라틴 방진: 각 행·열에 ${FILL_KO[f0]}·${FILL_KO[f1]}·${FILL_KO[f2]} 1번씩. 행 형태=${SHAPE_KO[s2]}`,
         'matrix3x3', 2));
       n++;
@@ -232,8 +227,7 @@ let qid = 1;
       const d2 = f(s2, f0, sz); // wrong shape (s2 in row2 col0)
       const d3 = f(s1, f1, sz); // right shape, wrong fill (f1 in row2 col0)
       const d4 = f(s1, f2, sz); // right shape, wrong fill (f2 in row2 col1)
-      const d5 = f(s1, f0, d5sz(sz)); // correct shape+fill, wrong size
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `이중 라틴: 형태(${SHAPE_KO[s0]}·${SHAPE_KO[s1]}·${SHAPE_KO[s2]})와 채우기(${FILL_KO[f0]}·${FILL_KO[f1]}·${FILL_KO[f2]}) 각 행·열 1번씩. 정답: ${SHAPE_KO[s1]}/${FILL_KO[f0]}`,
         'matrix3x3', 3));
       n++;
@@ -268,8 +262,7 @@ let qid = 1;
       const d2 = f(s1, f1, sz, r2); // wrong fill (always clearly visible)
       const d3 = f(s0, f2, sz, r2); // wrong shape (s0 in row2 col1)
       const d4 = f(s2, f2, sz, r2); // wrong shape (s2 in row2 col0)
-      const d5 = f(s1, f2, d5sz(sz), r2); // correct shape+fill+rot, wrong size
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `라틴 형태 + 열별 회전: 형태 라틴, 채우기=행, 회전=열(${r0}°/${r1}°/${r2}°). 정답: ${SHAPE_KO[s1]}, ${FILL_KO[f2]}, ${r2}°`,
         'matrix3x3', 3));
       n++;
@@ -298,11 +291,10 @@ let qid = 1;
       const correct = f(s1, f0, csz);
       const altSz: Size = csz === 2 ? 3 : 2;
       const d1 = f(s1, f0, altSz);  // right shape+fill, wrong size
-      const d2 = f(s0, f0, csz);    // wrong shape s0
+      const d2 = f(s0, f0, csz);    // wrong shape
       const d3 = f(s1, f1, csz);    // right shape, wrong fill
       const d4 = f(s1, f2, csz);    // right shape, wrong fill
-      const d5 = f(s2, f0, csz);    // wrong shape s2 (in row2 col0)
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `이중 라틴 + 대각 크기: 형태·채우기 라틴 방진, 크기=(행+열)%3+1. 정답: ${SHAPE_KO[s1]}, ${FILL_KO[f0]}, 크기${csz}`,
         'matrix3x3', 4));
       n++;
@@ -335,10 +327,9 @@ let qid = 1;
       const correct = f(s1, f0, csz, r2);
       const d1 = f(s1, f0, csz, r0);  // wrong rotation (safe after filter)
       const d2 = f(s1, f1, csz, r2);  // wrong fill (always clearly visible)
-      const d3 = f(s0, f0, csz, r2);  // wrong shape s0
+      const d3 = f(s0, f0, csz, r2);  // wrong shape
       const d4 = f(s1, f2, csz, r2);  // wrong fill
-      const d5 = f(s2, f0, csz, r2);  // wrong shape s2 (in row2 col0)
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `이중 라틴 + 대각 크기 + 열 회전: 4가지 규칙 동시 적용. 정답: ${SHAPE_KO[s1]}, ${FILL_KO[f0]}, 크기${csz}, ${r2}°`,
         'matrix3x3', 4));
       n++;
@@ -374,8 +365,7 @@ let qid = 1;
       const d2 = f(s2, f1, 2, rot(2, 2), cnt(2, 2));  // wrong fill (always visible)
       const d3 = f(s2, f2, 2, rot(2, 2), 3);          // wrong count
       const d4 = f(s2, f0, 2, rot(2, 2), cnt(2, 2));  // wrong fill
-      const d5 = f(s1, f2, 2, rot(2, 2), cnt(2, 2));  // wrong shape s1
-      QUESTIONS.push(makeQ6(qid++, cells8, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `순환 패턴: 회전=(행+열)%3번째 각도, 개수=(행+열)%3+1. 정답: ${SHAPE_KO[s2]}, ${FILL_KO[f2]}, ${rot(2, 2)}°, ${cnt(2, 2)}개`,
         'matrix3x3', 5));
       n++;
@@ -413,8 +403,7 @@ let qid = 1;
           const d2 = f(shape, fill, s, r_back);                        // one step back
           const d3 = f(ROT_SHAPES[(shi + 1) % ROT_SHAPES.length], fill, s, r3); // wrong shape
           const d4 = f(shape, FILLS[(fi + 1) % 4], s, r3);             // wrong fill
-          const d5 = f(shape, fill, d5sz(s), r3);                      // correct shape+fill+rot, wrong size
-          QUESTIONS.push(makeQ6(qid++, cells, correct, d1, d2, d3, d4, d5,
+          QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
             `매 단계 ${dr}° 회전 — 다음은 ${r3}°`,
             'series', 2));
           n++;
@@ -445,12 +434,11 @@ let qid = 1;
         ];
         const correct = f(shape, cFill, s, 270);
         // All distractors use rotation=270 so fill is always the clear discriminator
-        const d1 = f(shape, fills[0], s, 270);               // wrong fill (step 0's fill)
-        const d2 = f(shape, fills[1], s, 270);               // wrong fill (step 1's fill)
-        const d3 = f(shape, fills[2], s, 270);               // wrong fill (step 2's fill)
-        const d4 = f(SHAPES[(shi + 1) % 8], cFill, s, 270);  // wrong shape
-        const d5 = f(shape, cFill, d5sz(s), 270);            // correct shape+fill+rot, wrong size
-        QUESTIONS.push(makeQ6(qid++, cells, correct, d1, d2, d3, d4, d5,
+        const d1 = f(shape, fills[0], s, 270);             // wrong fill (step 0's fill)
+        const d2 = f(shape, fills[1], s, 270);             // wrong fill (step 1's fill)
+        const d3 = f(shape, fills[2], s, 270);             // wrong fill (step 2's fill)
+        const d4 = f(SHAPES[(shi + 1) % 8], cFill, s, 270); // wrong shape
+        QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
           `채우기: ${FILL_KO[fills[0]]}→${FILL_KO[fills[1]]}→${FILL_KO[fills[2]]}→${FILL_KO[cFill]}, 회전: 0→90→180→270°`,
           'series', 3));
         n++;
@@ -476,10 +464,9 @@ let qid = 1;
       const correct = f(s3, f3, 1, 0); // size wraps back to 1
       const d1 = f(s3, f3, 3, 0);      // wrong size (no wrap)
       const d2 = f(s3, f0, 1, 0);      // wrong fill
-      const d3 = f(s0, f3, 1, 0);      // wrong shape s0
+      const d3 = f(s0, f3, 1, 0);      // wrong shape
       const d4 = f(s3, f3, 2, 0);      // wrong size
-      const d5 = f(s1, f3, 1, 0);      // wrong shape s1
-      QUESTIONS.push(makeQ6(qid++, cells, correct, d1, d2, d3, d4, d5,
+      QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
         `형태·채우기·크기 동시 순환. 크기 1→2→3→1 반복. 다음: ${SHAPE_KO[s3]}, ${FILL_KO[f3]}, 크기1`,
         'series', 4));
       n++;
@@ -500,17 +487,17 @@ let qid = 1;
         const fill = FILLS[fi];
         const s = sz as Size;
         const oddShape: Shape = SHAPES[(shi + 1 + n % 6) % SHAPES.length];
-        const oddPos = n % 6;
-        const items: [Fig, Fig, Fig, Fig, Fig, Fig] = [
+        const oddPos = n % 5;
+        const items: [Fig, Fig, Fig, Fig, Fig] = [
           f(shape, fill, s), f(shape, fill, s), f(shape, fill, s),
-          f(shape, fill, s), f(shape, fill, s), f(shape, fill, s),
+          f(shape, fill, s), f(shape, fill, s),
         ];
         items[oddPos] = f(oddShape, fill, s);
         QUESTIONS.push({
           id: qid++, type: 'oddOneOut', cells: items,
           options: items,
           answer: oddPos, difficulty: 1,
-          explanation: `나머지 5개는 ${SHAPE_KO[shape]}이지만 ${oddPos + 1}번은 ${SHAPE_KO[oddShape]}입니다.`,
+          explanation: `나머지 4개는 ${SHAPE_KO[shape]}이지만 ${oddPos + 1}번은 ${SHAPE_KO[oddShape]}입니다.`,
         });
         n++;
       }
@@ -530,17 +517,17 @@ let qid = 1;
       const fill = FILLS[fi];
       const oddFill: Fill = FILLS[(fi + 1 + n % 3) % 4];
       const sz: Size = ((n % 3) + 1) as Size;
-      const oddPos = n % 6;
-      const items: [Fig, Fig, Fig, Fig, Fig, Fig] = [
+      const oddPos = n % 5;
+      const items: [Fig, Fig, Fig, Fig, Fig] = [
         f(shape, fill, sz), f(shape, fill, sz), f(shape, fill, sz),
-        f(shape, fill, sz), f(shape, fill, sz), f(shape, fill, sz),
+        f(shape, fill, sz), f(shape, fill, sz),
       ];
       items[oddPos] = f(shape, oddFill, sz);
       QUESTIONS.push({
         id: qid++, type: 'oddOneOut', cells: items,
         options: items,
         answer: oddPos, difficulty: 1,
-        explanation: `나머지 5개는 ${FILL_KO[fill]} 채우기이지만 ${oddPos + 1}번은 ${FILL_KO[oddFill]} 채우기입니다.`,
+        explanation: `나머지 4개는 ${FILL_KO[fill]} 채우기이지만 ${oddPos + 1}번은 ${FILL_KO[oddFill]} 채우기입니다.`,
       });
       n++;
     }
@@ -560,17 +547,17 @@ let qid = 1;
       const fill = FILLS[fi];
       const mainSz: Size = 2;
       const oddSz: Size = (n % 2 === 0) ? 1 : 3;
-      const oddPos = n % 6;
-      const items: [Fig, Fig, Fig, Fig, Fig, Fig] = [
+      const oddPos = n % 5;
+      const items: [Fig, Fig, Fig, Fig, Fig] = [
         f(shape, fill, mainSz), f(shape, fill, mainSz), f(shape, fill, mainSz),
-        f(shape, fill, mainSz), f(shape, fill, mainSz), f(shape, fill, mainSz),
+        f(shape, fill, mainSz), f(shape, fill, mainSz),
       ];
       items[oddPos] = f(shape, fill, oddSz);
       QUESTIONS.push({
         id: qid++, type: 'oddOneOut', cells: items,
         options: items,
         answer: oddPos, difficulty: 2,
-        explanation: `나머지 5개는 중간 크기이지만 ${oddPos + 1}번만 ${oddSz === 1 ? '작은' : '큰'} 크기입니다.`,
+        explanation: `나머지 4개는 중간 크기이지만 ${oddPos + 1}번만 ${oddSz === 1 ? '작은' : '큰'} 크기입니다.`,
       });
       n++;
     }

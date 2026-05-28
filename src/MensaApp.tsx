@@ -45,13 +45,13 @@ function shuffle<T>(arr: T[], seed = Math.random()): T[] {
 
 function estimateIQ(score: number, total: number) {
   const p = score / total;
-  // Calibrated for MKAT (45q/20min, SD24 scale)
-  if (p >= 0.93) return { iq: 148, label: '최상위 0.1% — MKAT 최고 등급', color: 'text-purple-400' };
-  if (p >= 0.87) return { iq: 132, label: '멘사코리아 합격권 (상위 2%)', color: 'text-indigo-400' };
-  if (p >= 0.78) return { iq: 127, label: '상위 5% — MKAT 합격 근접', color: 'text-blue-400' };
-  if (p >= 0.69) return { iq: 122, label: '상위 10% — 우수', color: 'text-sky-400' };
-  if (p >= 0.58) return { iq: 115, label: '평균 이상', color: 'text-teal-400' };
-  if (p >= 0.47) return { iq: 107, label: '보통 수준', color: 'text-emerald-400' };
+  // Calibrated for the 25-question Mensa-level test
+  if (p >= 0.96) return { iq: 148, label: '최상위 0.1% (천재 수준)', color: 'text-purple-400' };
+  if (p >= 0.88) return { iq: 132, label: '멘사 합격권 (상위 2%)', color: 'text-indigo-400' };
+  if (p >= 0.80) return { iq: 127, label: '상위 5% — 멘사 근접', color: 'text-blue-400' };
+  if (p >= 0.72) return { iq: 122, label: '상위 10% — 우수', color: 'text-sky-400' };
+  if (p >= 0.60) return { iq: 115, label: '평균 이상', color: 'text-teal-400' };
+  if (p >= 0.48) return { iq: 107, label: '보통 수준', color: 'text-emerald-400' };
   return { iq: 98, label: '추가 연습 필요', color: 'text-amber-400' };
 }
 
@@ -89,18 +89,21 @@ export default function MensaApp() {
   }
 
   function startExam() {
-    // MKAT: 45 questions (20 min), all matrix3x3, difficulty-stratified
-    const byDiff = (d: number) => ALL_FRT_QUESTIONS.filter(q => q.difficulty === d && q.type === 'matrix3x3');
-    const qs = shuffle([
-      ...shuffle(byDiff(1)).slice(0, 8),
-      ...shuffle(byDiff(2)).slice(0, 12),
-      ...shuffle(byDiff(3)).slice(0, 10),
-      ...shuffle(byDiff(4)).slice(0, 10),
-      ...shuffle(byDiff(5)).slice(0, 5),
-    ]);
+    // 25 questions (30 min): difficulty-stratified like real Mensa Korea
+    const byDiff = (d: number) => ALL_FRT_QUESTIONS.filter(q => q.difficulty === d);
+    const mat = [
+      ...shuffle(byDiff(1).filter(q=>q.type==='matrix3x3')).slice(0,3),
+      ...shuffle(byDiff(2).filter(q=>q.type==='matrix3x3')).slice(0,4),
+      ...shuffle(byDiff(3).filter(q=>q.type==='matrix3x3')).slice(0,3),
+      ...shuffle(byDiff(4).filter(q=>q.type==='matrix3x3')).slice(0,2),
+      ...shuffle(byDiff(5).filter(q=>q.type==='matrix3x3')).slice(0,1),
+    ];
+    const ser = shuffle(ALL_FRT_QUESTIONS.filter(q=>q.type==='series')).slice(0,6);
+    const odd = shuffle(ALL_FRT_QUESTIONS.filter(q=>q.type==='oddOneOut')).slice(0,6);
+    const qs = shuffle([...mat, ...ser, ...odd]);
     setQuestions(qs); setIdx(0); setAnswers(new Array(qs.length).fill(null));
     setSelected(null); setShowExp(false); setIsExam(true);
-    setTimeLeft(20 * 60); startRef.current = Date.now(); setView('exam');
+    setTimeLeft(30 * 60); startRef.current = Date.now(); setView('exam');
     timerRef.current = setInterval(() => {
       setTimeLeft(t => { if (t <= 1) { stopTimer(); return 0; } return t - 1; });
     }, 1000);
@@ -237,7 +240,7 @@ function HomeView({ stats, onPractice, onExam, onStats }: {
               <div>
                 <div className="flex items-center gap-2 mb-1"><Clock size={18} className="text-blue-200" /><span className="text-blue-200 text-sm font-medium">실전 모의고사</span></div>
                 <h3 className="text-xl font-bold">FRT 모의시험 시작</h3>
-                <p className="text-blue-200 text-sm mt-1">45문제 · 20분 · MKAT 형식 · 6지선다</p>
+                <p className="text-blue-200 text-sm mt-1">25문제 · 30분 · 난이도 1~5단계 혼합</p>
               </div>
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Play size={22} className="text-white ml-0.5" />
@@ -283,10 +286,10 @@ function HomeView({ stats, onPractice, onExam, onStats }: {
             <div>
               <p className="text-sm font-semibold mb-1">멘사코리아 FRT란?</p>
               <p className="text-xs text-white/60 leading-relaxed">
-                멘사코리아 입회 시험(MKAT)은 <strong className="text-white/80">도형 추리 시험(FRT)</strong>을 사용합니다.
-                총 45문제·20분·<strong className="text-white/80">6지선다</strong>, 3×3 행렬 완성 형식으로
-                언어·문화·지식에 무관한 순수 패턴 인식 능력을 측정합니다.
-                IQ 상위 2% (SD24 기준 148+)가 합격 기준입니다.
+                멘사코리아는 <strong className="text-white/80">도형 추리 시험(Figure Reasoning Test)</strong>을 사용합니다.
+                언어·문화·지식에 무관한 순수 패턴 인식 능력을 측정하며,
+                3×3 행렬 완성, 수열 완성, 유사성 판단 등의 문제로 구성됩니다.
+                IQ 상위 2% (약 130 이상)가 합격 기준입니다.
               </p>
             </div>
           </div>
@@ -351,7 +354,7 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
           <p className="text-white/70 text-sm mb-4">
             {q.type === 'matrix3x3' && '다음 3×3 도형 행렬에서 물음표(?) 자리에 들어갈 알맞은 도형을 고르시오.'}
             {q.type === 'series' && '다음 도형 수열에서 물음표(?) 자리에 들어갈 알맞은 도형을 고르시오.'}
-            {q.type === 'oddOneOut' && '다음 6개의 도형 중 나머지와 패턴이 다른 하나를 고르시오.'}
+            {q.type === 'oddOneOut' && '다음 5개의 도형 중 나머지와 패턴이 다른 하나를 고르시오.'}
           </p>
 
           {/* Figure Grid */}
@@ -366,7 +369,7 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
           {/* Options (for matrix and series) — 5지선다 */}
           {(q.type === 'matrix3x3' || q.type === 'series') && (
             <div className="mt-6">
-              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (6지선다)</p>
+              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (5지선다)</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {q.options.map((opt, i) => {
                   let ring = 'ring-transparent';
@@ -381,12 +384,12 @@ function QuestionView({ q, idx, total, selected, showExp, isExam, timeLeft, answ
                   return (
                     <button key={i} onClick={() => onSelect(i)}
                       disabled={!isExam && selected !== null}
-                      className={cn('rounded-2xl p-3 flex flex-col items-center gap-2 transition-all border border-white/10 ring-2 w-[15%] min-w-[60px]', bg, ring,
+                      className={cn('rounded-2xl p-3 flex flex-col items-center gap-2 transition-all border border-white/10 ring-2 w-[18%] min-w-[64px]', bg, ring,
                         !(!isExam && selected !== null) && 'hover:-translate-y-0.5 cursor-pointer')}>
                       <div className="bg-white rounded-xl p-1.5">
                         <FigureCell fig={opt} size={48}/>
                       </div>
-                      <span className="text-xs font-bold text-white/70">{['①','②','③','④','⑤','⑥'][i]}</span>
+                      <span className="text-xs font-bold text-white/70">{['①','②','③','④','⑤'][i]}</span>
                       {!isExam && showExp && (
                         i === q.answer ? <CheckCircle size={14} className="text-emerald-400"/> :
                         i === selected ? <XCircle size={14} className="text-rose-400"/> : null
@@ -499,7 +502,7 @@ function OddOneOutDisplay({ cells, selected, isExam, onSelect, answer, showAnswe
               'hover:-translate-y-0.5 cursor-pointer')}>
             <div className="flex flex-col items-center gap-2">
               <FigureCell fig={fig} size={70} />
-              <span className="text-xs font-bold text-slate-500">{['①','②','③','④','⑤','⑥'][i]}</span>
+              <span className="text-xs font-bold text-slate-500">{['①','②','③','④','⑤'][i]}</span>
               {!isExam && showAnswer && (
                 i === answer ? <CheckCircle size={14} className="text-emerald-500"/> :
                 i === selected ? <XCircle size={14} className="text-rose-500"/> : null
@@ -617,16 +620,16 @@ function ReviewView({ questions, answers, idx, onNext, onPrev, onBack, onHome }:
 
           {(q.type === 'matrix3x3' || q.type === 'series') && (
             <div className="mt-4">
-              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (6지선다)</p>
+              <p className="text-xs text-white/40 mb-3 uppercase tracking-widest">선택지 (5지선다)</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {q.options.map((opt, i) => {
                   let ring = 'ring-transparent', bg = 'bg-white';
                   if (i === q.answer) { ring = 'ring-emerald-400'; bg = 'bg-emerald-50'; }
                   else if (i === userAns) { ring = 'ring-rose-400'; bg = 'bg-rose-50'; }
                   return (
-                    <div key={i} className={cn('rounded-2xl p-2 border-2 ring-2 flex flex-col items-center gap-1.5 w-[15%] min-w-[52px]', bg, ring)}>
+                    <div key={i} className={cn('rounded-2xl p-2 border-2 ring-2 flex flex-col items-center gap-1.5 w-[18%] min-w-[56px]', bg, ring)}>
                       <FigureCell fig={opt} size={48}/>
-                      <span className="text-xs font-bold text-slate-400">{['①','②','③','④','⑤','⑥'][i]}</span>
+                      <span className="text-xs font-bold text-slate-400">{['①','②','③','④','⑤'][i]}</span>
                       {i === q.answer && <CheckCircle size={12} className="text-emerald-500"/>}
                       {i === userAns && i !== q.answer && <XCircle size={12} className="text-rose-500"/>}
                     </div>
