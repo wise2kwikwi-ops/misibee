@@ -78,6 +78,20 @@ const LS_REV = [[0, 1, 2], [2, 0, 1], [1, 2, 0]];
 
 const diagSz = (r: number, c: number): Size => (((r + c) % 3) + 1) as Size;
 
+// Rotational symmetry period (degrees) for each shape in FigureCell.tsx
+const ROT_PERIOD: Record<Shape, number> = {
+  circle: 1, square: 90, cross: 90, diamond: 90,
+  hexagon: 60, triangle: 120, pentagon: 72, star: 72,
+};
+
+// Returns true iff all angles produce visually distinct appearances for the shape
+function rotDistinct(shape: Shape, angles: number[]): boolean {
+  const p = ROT_PERIOD[shape];
+  if (p === 1) return false;
+  const mods = angles.map(a => ((a % p) + p) % p);
+  return new Set(mods).size === angles.length;
+}
+
 const SHAPE_KO: Record<Shape, string> = {
   circle: '원', square: '사각형', triangle: '삼각형', diamond: '마름모',
   pentagon: '오각형', hexagon: '육각형', star: '별', cross: '십자',
@@ -235,6 +249,8 @@ let qid = 1;
       const fi = (si + ri) % FT.length;
       const [f0, f1, f2] = FT[fi];
       const [r0, r1, r2] = RT[ri];
+      // Skip if s1 (answer shape) can't visually distinguish the three column rotations
+      if (!rotDistinct(s1, [r0, r1, r2])) continue;
       const sz: Size = ((n % 3) + 1) as Size;
       const cells8 = m(
         f(s0, f0, sz, r0), f(s1, f0, sz, r1), f(s2, f0, sz, r2),
@@ -242,8 +258,8 @@ let qid = 1;
         f(s2, f2, sz, r0), f(s0, f2, sz, r1),
       );
       const correct = f(s1, f2, sz, r2);
-      const d1 = f(s1, f2, sz, r0); // wrong rotation
-      const d2 = f(s1, f2, sz, r1); // wrong rotation
+      const d1 = f(s1, f2, sz, r0); // wrong rotation (safe: rotDistinct ensures r0≠r2 visually)
+      const d2 = f(s1, f1, sz, r2); // wrong fill (always clearly visible)
       const d3 = f(s0, f2, sz, r2); // wrong shape (s0 in row2 col1)
       const d4 = f(s2, f2, sz, r2); // wrong shape (s2 in row2 col0)
       QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
@@ -300,6 +316,8 @@ let qid = 1;
       const fi = (si + ri) % FT.length;
       const [f0, f1, f2] = FT[fi];
       const [r0, r1, r2] = RT[ri];
+      // Skip if s1 can't visually distinguish the three column rotations
+      if (!rotDistinct(s1, [r0, r1, r2])) continue;
       const cells8 = m(
         f(s0, f0, diagSz(0, 0), r0), f(s1, f1, diagSz(0, 1), r1), f(s2, f2, diagSz(0, 2), r2),
         f(s1, f2, diagSz(1, 0), r0), f(s2, f0, diagSz(1, 1), r1), f(s0, f1, diagSz(1, 2), r2),
@@ -307,10 +325,10 @@ let qid = 1;
       );
       const csz = diagSz(2, 2);
       const correct = f(s1, f0, csz, r2);
-      const d1 = f(s1, f0, csz, r0);  // wrong rotation
-      const d2 = f(s1, f0, csz, r1);  // wrong rotation
+      const d1 = f(s1, f0, csz, r0);  // wrong rotation (safe after filter)
+      const d2 = f(s1, f1, csz, r2);  // wrong fill (always clearly visible)
       const d3 = f(s0, f0, csz, r2);  // wrong shape
-      const d4 = f(s1, f1, csz, r2);  // wrong fill
+      const d4 = f(s1, f2, csz, r2);  // wrong fill
       QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `이중 라틴 + 대각 크기 + 열 회전: 4가지 규칙 동시 적용. 정답: ${SHAPE_KO[s1]}, ${FILL_KO[f0]}, 크기${csz}, ${r2}°`,
         'matrix3x3', 4));
@@ -341,10 +359,12 @@ let qid = 1;
         f(s2, f0, 2, rot(2, 0), cnt(2, 0)), f(s2, f1, 2, rot(2, 1), cnt(2, 1)),
       );
       const correct = f(s2, f2, 2, rot(2, 2), cnt(2, 2));
-      const d1 = f(s2, f2, 2, r0, cnt(2, 2));       // wrong rotation
-      const d2 = f(s2, f2, 2, r2, cnt(2, 2));       // wrong rotation
-      const d3 = f(s2, f2, 2, rot(2, 2), 3);        // wrong count
-      const d4 = f(s2, f0, 2, rot(2, 2), cnt(2, 2)); // wrong fill
+      // Avoid rotation-only distractors that look identical for symmetric shapes
+      const altCnt = cnt(2, 2) === 1 ? 3 : 1;
+      const d1 = f(s2, f2, 2, rot(2, 2), altCnt);     // wrong count (always visible)
+      const d2 = f(s2, f1, 2, rot(2, 2), cnt(2, 2));  // wrong fill (always visible)
+      const d3 = f(s2, f2, 2, rot(2, 2), 3);          // wrong count
+      const d4 = f(s2, f0, 2, rot(2, 2), cnt(2, 2));  // wrong fill
       QUESTIONS.push(makeQ5(qid++, cells8, correct, d1, d2, d3, d4,
         `순환 패턴: 회전=(행+열)%3번째 각도, 개수=(행+열)%3+1. 정답: ${SHAPE_KO[s2]}, ${FILL_KO[f2]}, ${rot(2, 2)}°, ${cnt(2, 2)}개`,
         'matrix3x3', 5));
@@ -358,26 +378,37 @@ let qid = 1;
 // 고정 회전각 증가 수열 — 다음 원소를 맞추시오
 // ══════════════════════════════════════════════════════════════════════════════
 (function genSeriesL2() {
+  // Only shapes where rotation produces clearly distinct appearances
+  const ROT_SHAPES: Shape[] = ['triangle', 'pentagon', 'star'];
   let n = 0;
-  outer: for (let si = 0; si < ST.length; si++) {
+  outer: for (let shi = 0; shi < ROT_SHAPES.length; shi++) {
+    const shape = ROT_SHAPES[shi];
     for (let ri = 0; ri < RT.length; ri++) {
       if (n >= 50) break outer;
-      const [s0] = ST[si];
       const [r0, r1, r2] = RT[ri];
-      const fill: Fill = FILLS[(si + ri) % 4];
-      const sz: Size = ((n % 3) + 1) as Size;
       const dr = ((r1 - r0) + 360) % 360;
       const r3 = (r2 + dr) % 360;
-      const cells = [f(s0, fill, sz, r0), f(s0, fill, sz, r1), f(s0, fill, sz, r2)];
-      const correct = f(s0, fill, sz, r3);
-      const d1 = f(s0, fill, sz, r0);
-      const d2 = f(s0, fill, sz, (r2 - dr + 360) % 360);
-      const d3 = f(ST[(si + 1) % ST.length][0], fill, sz, r3);
-      const d4 = f(s0, FILLS[(FILLS.indexOf(fill) + 1) % 4], sz, r3);
-      QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
-        `매 단계 ${dr}° 회전 — 다음은 ${r3}°`,
-        'series', 2));
-      n++;
+      // Skip if correct answer looks same as d1 (r3=r0) or series items look same
+      if (!rotDistinct(shape, [r0, r1, r2, r3])) continue;
+      for (let fi = 0; fi < FILLS.length && n < 50; fi++) {
+        for (let sz = 1; sz <= 3 && n < 50; sz++) {
+          const fill = FILLS[fi];
+          const s = sz as Size;
+          const r_back = (r2 - dr + 360) % 360;
+          // Skip if back-step distractor equals correct
+          if (r_back === r3) continue;
+          const cells = [f(shape, fill, s, r0), f(shape, fill, s, r1), f(shape, fill, s, r2)];
+          const correct = f(shape, fill, s, r3);
+          const d1 = f(shape, fill, s, r0);                            // went back to start
+          const d2 = f(shape, fill, s, r_back);                        // one step back
+          const d3 = f(ROT_SHAPES[(shi + 1) % ROT_SHAPES.length], fill, s, r3); // wrong shape
+          const d4 = f(shape, FILLS[(fi + 1) % 4], s, r3);             // wrong fill
+          QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
+            `매 단계 ${dr}° 회전 — 다음은 ${r3}°`,
+            'series', 2));
+          n++;
+        }
+      }
     }
   }
 })();
@@ -402,10 +433,11 @@ let qid = 1;
           f(shape, fills[2], s, 180),
         ];
         const correct = f(shape, cFill, s, 270);
-        const d1 = f(shape, cFill, s, 0);
-        const d2 = f(shape, fills[0], s, 270);
-        const d3 = f(shape, cFill, s, 90);
-        const d4 = f(SHAPES[(shi + 1) % 8], cFill, s, 270);
+        // All distractors use rotation=270 so fill is always the clear discriminator
+        const d1 = f(shape, fills[0], s, 270);             // wrong fill (step 0's fill)
+        const d2 = f(shape, fills[1], s, 270);             // wrong fill (step 1's fill)
+        const d3 = f(shape, fills[2], s, 270);             // wrong fill (step 2's fill)
+        const d4 = f(SHAPES[(shi + 1) % 8], cFill, s, 270); // wrong shape
         QUESTIONS.push(makeQ5(qid++, cells, correct, d1, d2, d3, d4,
           `채우기: ${FILL_KO[fills[0]]}→${FILL_KO[fills[1]]}→${FILL_KO[fills[2]]}→${FILL_KO[cFill]}, 회전: 0→90→180→270°`,
           'series', 3));
@@ -503,33 +535,31 @@ let qid = 1;
 })();
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ODD ONE OUT — Rotation (20q)  난이도 2
+// ODD ONE OUT — Size (20q)  난이도 2
+// 크기 차이는 어떤 도형이든 항상 명확하게 보임
 // ══════════════════════════════════════════════════════════════════════════════
-(function genOddRotation() {
+(function genOddSize() {
   let n = 0;
   outer: for (let shi = 0; shi < SHAPES.length; shi++) {
     for (let fi = 0; fi < FILLS.length; fi++) {
-      for (let ri = 0; ri < ROTS.length; ri++) {
-        if (n >= 20) break outer;
-        const shape = SHAPES[shi];
-        const fill = FILLS[fi];
-        const mainRot = ROTS[ri];
-        const oddRot = ROTS[(ri + 2) % ROTS.length];
-        const sz: Size = ((n % 3) + 1) as Size;
-        const oddPos = n % 5;
-        const items: [Fig, Fig, Fig, Fig, Fig] = [
-          f(shape, fill, sz, mainRot), f(shape, fill, sz, mainRot), f(shape, fill, sz, mainRot),
-          f(shape, fill, sz, mainRot), f(shape, fill, sz, mainRot),
-        ];
-        items[oddPos] = f(shape, fill, sz, oddRot);
-        QUESTIONS.push({
-          id: qid++, type: 'oddOneOut', cells: items,
-          options: items,
-          answer: oddPos, difficulty: 2,
-          explanation: `나머지 4개는 ${mainRot}° 방향이지만 ${oddPos + 1}번은 ${oddRot}° 방향입니다.`,
-        });
-        n++;
-      }
+      if (n >= 20) break outer;
+      const shape = SHAPES[shi];
+      const fill = FILLS[fi];
+      const mainSz: Size = 2;
+      const oddSz: Size = (n % 2 === 0) ? 1 : 3;
+      const oddPos = n % 5;
+      const items: [Fig, Fig, Fig, Fig, Fig] = [
+        f(shape, fill, mainSz), f(shape, fill, mainSz), f(shape, fill, mainSz),
+        f(shape, fill, mainSz), f(shape, fill, mainSz),
+      ];
+      items[oddPos] = f(shape, fill, oddSz);
+      QUESTIONS.push({
+        id: qid++, type: 'oddOneOut', cells: items,
+        options: items,
+        answer: oddPos, difficulty: 2,
+        explanation: `나머지 4개는 중간 크기이지만 ${oddPos + 1}번만 ${oddSz === 1 ? '작은' : '큰'} 크기입니다.`,
+      });
+      n++;
     }
   }
 })();
