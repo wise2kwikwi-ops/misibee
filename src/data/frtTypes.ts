@@ -14,8 +14,8 @@ export interface FRTQuestion {
   id: number;
   type: 'matrix3x3' | 'series' | 'oddOneOut';
   cells: Fig[];
-  options: [Fig, Fig, Fig, Fig, Fig]; // 5지선다
-  answer: number;                     // 0–4
+  options: [Fig, Fig, Fig, Fig, Fig, Fig]; // 6지선다 (MKAT)
+  answer: number;                          // 0–5
   difficulty: 1 | 2 | 3 | 4 | 5;    // 1=쉬움 … 5=멘사 최고난도
   explanation: string;
 }
